@@ -1,7 +1,11 @@
+import type { NextApiRequest, NextApiResponse } from "next";
 const puppeteer = require("puppeteer");
 
-export default async (req, res) => {
-  const { url, base64 } = req.query;
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  const { url } = req.query;
 
   if (!url) {
     return res.status(400).json({ error: "URL parameter is required" });
@@ -15,15 +19,12 @@ export default async (req, res) => {
     await page.setViewport({ width: 1600, height: 1200 });
     await page.goto(url);
     const screenshot = await page.screenshot({ type: "png" });
-    if (!base64) {
-      res.status(200).send(screenshot);
-    }
-    res.status(200).json({ image: screenshot });
+    res.status(200).send(screenshot);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: (error as any).message });
   } finally {
     if (browser) {
       await browser.close();
     }
   }
-};
+}
